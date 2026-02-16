@@ -200,7 +200,7 @@ class ServiceCalculatorGUI(QMainWindow):
 
     def toggle_language(self):
         # Sicherheitsprüfung: Prüfe ob alle GUI-Elemente existieren
-        required_attrs = ['project_name_edit', 'lang_btn', 'table_group', 'result_group', 'target_label', 'calculate_btn']
+        required_attrs = ['lang_btn', 'table_group', 'result_group', 'target_label', 'calculate_btn']
         for attr in required_attrs:
             if not hasattr(self, attr) or getattr(self, attr) is None:
                 return
@@ -209,7 +209,6 @@ class ServiceCalculatorGUI(QMainWindow):
             if self.current_language == "de":
                 self.current_language = "cn"
                 self.lang_btn.setText("CN")
-                self.project_name_edit.setPlaceholderText("服务计算器")
                 self.table_group.setTitle("服务列表")
                 self.result_group.setTitle("计算结果")
                 self.target_label.setText("目标金额:")
@@ -222,7 +221,6 @@ class ServiceCalculatorGUI(QMainWindow):
             else:
                 self.current_language = "de"
                 self.lang_btn.setText("DE")
-                self.project_name_edit.setPlaceholderText("Service-Rechner")
                 self.table_group.setTitle("Service-Liste")
                 self.result_group.setTitle("Berechnungsergebnis")
                 self.target_label.setText("Zielbetrag:")
@@ -239,11 +237,7 @@ class ServiceCalculatorGUI(QMainWindow):
     # 只展示 calculate()，其余文件保持你原来的不变
     # ===== 只需要替换你文件里的 calculate() 函数 =====
 
-    def on_project_name_changed(self, text):
-        """项目名称改变时的处理"""
-        self.project_name = text
-        self.setWindowTitle(text)
-        self.save_config()
+
     
     def on_service_name_changed(self, index, text):
         """服务名称改变时的处理"""
