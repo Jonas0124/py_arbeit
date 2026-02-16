@@ -170,8 +170,34 @@ class ServiceCalculatorGUI(QMainWindow):
         self.calculate_btn = QPushButton("Berechnen")
         self.calculate_btn.clicked.connect(self.calculate)
         target_layout.addWidget(self.calculate_btn)
+        
+        # 清空按钮
+        self.clear_btn = QPushButton("Leeren")
+        self.clear_btn.clicked.connect(self.clear_inputs)
+        target_layout.addWidget(self.clear_btn)
+        
         layout.addLayout(target_layout)
 
+    def clear_inputs(self):
+        """清空所有数量输入框和目标金额"""
+        try:
+            # 清空所有服务的数量输入框
+            for i in range(len(self.services)):
+                qty_edit = self.table.cellWidget(i, 2)
+                if qty_edit:
+                    qty_edit.clear()
+                    qty_edit.setPlaceholderText("0")
+            
+            # 清空目标金额输入框
+            self.target_edit.clear()
+            
+            # 清空结果显示区域
+            self.result_label.setText("")
+            
+        except Exception as e:
+            # 静默处理错误，避免影响用户体验
+            pass
+    
     def toggle_language(self):
         # Sicherheitsprüfung: Prüfe ob alle GUI-Elemente existieren
         required_attrs = ['title_label', 'lang_btn', 'table_group', 'result_group', 'target_label', 'calculate_btn']
