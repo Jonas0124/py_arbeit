@@ -200,158 +200,106 @@ class ServiceCalculatorGUI(QMainWindow):
             # Bei Fehlern einfach ignorieren
             pass
 
+    # 只展示 calculate()，其余文件保持你原来的不变
+    # ===== 只需要替换你文件里的 calculate() 函数 =====
+
     def calculate(self):
         try:
-            # Berechne Originaltotal
-            original_total = 0
-            for i in range(len(self.services)):
-                price_text = self.table.cellWidget(i, 1).text()
-                qty_text = self.table.cellWidget(i, 2).text()
-                price = float(price_text) if price_text else 0
-                qty = int(qty_text) if qty_text and qty_text.strip() not in ["", "null"] else 0
-                original_total += price * qty
-
-            target_text = self.target_edit.text().strip()
-            if not target_text:
-                if self.current_language == "de":
-                    self.result_label.setText("Bitte geben Sie einen Zielbetrag ein")
-                else:
-                    self.result_label.setText("请输入目标金额")
-                return
-
-            # Ersetze Komma durch Punkt für Dezimalzahlen
-            target_text_clean = target_text.replace(',', '.')
-            target_amount = float(target_text_clean)
-            if target_amount <= 0:
-                if self.current_language == "de":
-                    self.result_label.setText("Der Zielbetrag muss größer als 0 sein")
-                else:
-                    self.result_label.setText("目标金额必须大于0")
-                return
-
-            # 获取当前 Daten und filtere Services mit quantity > 0
+            # ===== 读取输入 =====
             prices = []
             quantities = []
-            service_indices = []
-            for i, service in enumerate(self.services):
-                price_text = self.table.cellWidget(i, 1).text()
+            for i in range(len(self.services)):
+                price = float(self.table.cellWidget(i, 1).text())
                 qty_text = self.table.cellWidget(i, 2).text()
+                qty = int(qty_text) if qty_text else 0
+                prices.append(price)
+                quantities.append(qty)
 
-                price = float(price_text) if price_text else 0
-                qty = int(qty_text) if qty_text and qty_text.strip() not in ["", "null"] else 0
+            # 原始金额
+            original_total = sum(prices[i] * quantities[i] for i in range(len(prices)))
 
-                # Nur Services mit qty > 0 berücksichtigen
-                if self.services[i]["price"] > 0 and qty > 0:
-                    prices.append(price)
-                    quantities.append(qty)
-                    service_indices.append(i)
+            # ⭐ 输入 = 要减少的金额
+            reduce_target = float(self.target_edit.text().replace(',', '.'))
 
-            if not prices:
-                if self.current_language == "de":
-                    self.result_label.setText("Keine Services mit Menge > 0 ausgewählt")
-                else:
-                    self.result_label.setText("Keine Services mit Menge > 0 ausgewählt")
+            if reduce_target <= 0:
+                self.result_label.setText("请输入要减少的金额")
                 return
 
-            # Optimierter Algorithmus: Prüfe jede einzelne Service-Art + kleine Kombinationen
-            best_total = 0
-            min_diff = float('inf')
-            best_combo = [0] * len(self.services)
+            # =================================================
+            # 1️⃣ 生成可减少服务池（每个服务最多减少 qty-1）
+            # =================================================
+            items = []
+            for i in range(len(self.services)):
+                qty = quantities[i]
+                price = prices[i]
 
-            # Option 1: Jede einzelne Service-Art für sich
-            for j in range(len(prices)):
-                max_qty = min(quantities[j] - 1, int(target_amount / prices[j]) + 1)
-                if max_qty > 0:
-                    total = prices[j] * max_qty
-                    diff = abs(total - target_amount)
-                    if diff < min_diff:
-                        min_diff = diff
-                        best_total = total
-                        best_combo = [0] * len(self.services)
-                        best_combo[service_indices[j]] = max_qty
+                if qty >= 2 and price > 0:
+                    reducible = qty - 1  # ⭐必须保留1个
+                    items.append((price, reducible, i))
 
-            # Option 2: Kleine Kombinationen (max 3 Services)
-            from itertools import combinations
-            for r in range(2, min(4, len(prices) + 1)):  # 2 oder 3 Services
-                for combo_indices in combinations(range(len(prices)), r):
-                    # Für diese Kombination: greedy mit begrenzter Suche
-                    total = 0
-                    combo = [0] * len(prices)
+            # 按价格从大到小 → 优先减少贵的
+            items.sort(reverse=True)
 
-                    # Sortiere nach Preis (aufsteigend) für bessere Heuristik
-                    sorted_idx = sorted(combo_indices, key=lambda x: prices[x])
+            # ===== reduction 数组（删除数量）=====
+            reduction = [0] * len(self.services)
+            remaining = reduce_target
 
-                    remaining = target_amount
-                    for idx in sorted_idx:
-                        max_qty = min(quantities[idx] - 1, int(remaining / prices[idx]) + 1)
-                        if max_qty > 0:
-                            qty = max_qty
-                            subtotal = prices[idx] * qty
-                            total += subtotal
-                            combo[idx] = qty
-                            remaining -= subtotal
-                            if remaining <= 0:
-                                break
+            # =================================================
+            # 2️⃣ Greedy 删除大金额服务
+            # =================================================
+            for price, max_reduce, idx in items:
+                if remaining <= 0:
+                    break
 
-                    diff = abs(total - target_amount)
-                    if diff < min_diff:
-                        min_diff = diff
-                        best_total = total
-                        best_combo = [0] * len(self.services)
-                        for j, idx in enumerate(sorted_idx):
-                            best_combo[service_indices[idx]] = combo[idx]
+                max_possible = int(remaining // price)
+                use = min(max_possible, max_reduce)
 
-            # Ergebnis als einfacher Text (ohne HTML)
-            if self.current_language == "de":
-                result = f"🎯 Zielbetrag: {target_amount:.2f}\n"
-                result += f"💰 Originalbetrag: {original_total:.2f} (Ihre Eingabe: Menge × Preis)\n"
-                result += f"🔴 Gesamtdifferenz: {original_total - best_total:.2f} (Originalbetrag - Berechneter Betrag)\n"
-                result += f"✅ Berechneter Betrag: {best_total:.2f}\n"
-                result += f"🔍 Gesamtdifferenz: {min_diff:.2f} ({min_diff / target_amount * 100:.2f}%)\n\n"
-                result += "📋 Service-Änderungsdetails:\n"
-                for i, service in enumerate(self.services):
-                    qty_input_text = self.table.cellWidget(i, 2).text()
-                    qty_input = int(qty_input_text) if qty_input_text and qty_input_text.strip() not in ["", "null"] else 0
-                    qty_calc = best_combo[i]
+                if use <= 0:
+                    continue
 
-                    if qty_input > 0:
-                        if qty_calc == 0:
-                            result += f"  {service['name']}: Eingabemenge: {qty_input}\n"
-                        elif qty_calc < qty_input:
-                            diff_qty = qty_input - qty_calc
-                            result += f"  {service['name']}: Differenz: {diff_qty} (Eingabe: {qty_input} → Berechnung: {qty_calc})\n"
-                        else:
-                            result += f"  {service['name']}: Keine Änderung: {qty_input}\n"
-                result += "\n💡 Hinweis: Berechnete Menge < Eingabemenge (streng kleiner)"
-            else:
-                result = f"🎯 目标金额: {target_amount:.2f}\n"
-                result += f"💰 原始总金额: {original_total:.2f} (您输入的数量 × 单价)\n"
-                result += f"🔴 总差额: {original_total - best_total:.2f} (原始总金额 - 计算金额)\n"
-                result += f"✅ 计算金额: {best_total:.2f}\n"
-                result += f"🔍 总差异: {min_diff:.2f} ({min_diff / target_amount * 100:.2f}%)\n\n"
-                result += "📋 服务变更详情:\n"
-                for i, service in enumerate(self.services):
-                    qty_input_text = self.table.cellWidget(i, 2).text()
-                    qty_input = int(qty_input_text) if qty_input_text and qty_input_text.strip() not in ["", "null"] else 0
-                    qty_calc = best_combo[i]
+                reduction[idx] = use
+                remaining -= use * price
 
-                    if qty_input > 0:
-                        if qty_calc == 0:
-                            result += f"  {service['name']}: 输入量: {qty_input}\n"
-                        elif qty_calc < qty_input:
-                            diff_qty = qty_input - qty_calc
-                            result += f"  {service['name']}: 差值: {diff_qty} (输入{qty_input}→计算{qty_calc})\n"
-                        else:
-                            result += f"  {service['name']}: 无变化: {qty_input}\n"
-                result += "\n💡 说明: 计算量 < 输入量 (严格小于)"
+            # =================================================
+            # 3️⃣ 用最便宜服务微调（允许略超）
+            # =================================================
+            if remaining > 0 and items:
+                min_price, max_reduce, idx = items[-1]
+                left = max_reduce - reduction[idx]
+
+                if left > 0:
+                    need = int(round(remaining / min_price))
+                    need = max(1, min(need, left))
+                    reduction[idx] += need
+                    remaining -= need * min_price
+
+            # =================================================
+            # 4️⃣ 计算最终数量与金额
+            # =================================================
+            final_qty = [quantities[i] - reduction[i] for i in range(len(quantities))]
+            final_total = sum(prices[i] * final_qty[i] for i in range(len(prices)))
+
+            reduced_money = original_total - final_total
+            diff = abs(reduced_money - reduce_target)
+
+            # =================================================
+            # 5️⃣ 输出结果（全部服务显示）
+            # =================================================
+            result = f"💰 原始金额: {original_total:.2f}\n"
+            result += f"🎯 目标减少: {reduce_target:.2f}\n"
+            result += f"🧾 实际减少: {reduced_money:.2f}\n"
+            result += f"📊 剩余金额: {final_total:.2f}\n"
+            result += f"🔍 误差: {diff:.2f}\n\n"
+            result += "📋 服务变化:\n"
+
+            for i, service in enumerate(self.services):
+                if quantities[i] > 0:
+                    result += f"{service['name']}: {quantities[i]} → {final_qty[i]}\n"
 
             self.result_label.setText(result)
 
         except Exception as e:
-            if self.current_language == "de":
-                self.result_label.setText(f"Fehler: {str(e)}")
-            else:
-                self.result_label.setText(f"计算错误: {str(e)}")
+            self.result_label.setText(str(e))
 
 
 if __name__ == "__main__":
