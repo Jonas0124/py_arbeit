@@ -215,37 +215,31 @@ class ServiceCalculatorGUI(QMainWindow):
                 prices.append(price)
                 quantities.append(qty)
 
-            # 原始金额
             original_total = sum(prices[i] * quantities[i] for i in range(len(prices)))
 
-            # ⭐ 输入 = 要减少的金额
+            # 输入 = 要减少的金额
             reduce_target = float(self.target_edit.text().replace(',', '.'))
-
             if reduce_target <= 0:
                 self.result_label.setText("请输入要减少的金额")
                 return
 
             # =================================================
-            # 1️⃣ 生成可减少服务池（每个服务最多减少 qty-1）
+            # 1️⃣ 可减少服务池（最多减少 qty-1）
             # =================================================
             items = []
             for i in range(len(self.services)):
                 qty = quantities[i]
                 price = prices[i]
-
                 if qty >= 2 and price > 0:
-                    reducible = qty - 1  # ⭐必须保留1个
-                    items.append((price, reducible, i))
+                    items.append((price, qty - 1, i))  # 必须保留1个
 
-            # 按价格从大到小 → 优先减少贵的
             items.sort(reverse=True)
 
-            # ===== reduction 数组（删除数量）=====
             reduction = [0] * len(self.services)
             remaining = reduce_target
 
             # =================================================
-            # 2️⃣ Greedy 删除大金额服务
+            # 2️⃣ Greedy 删除大金额
             # =================================================
             for price, max_reduce, idx in items:
                 if remaining <= 0:
@@ -260,21 +254,46 @@ class ServiceCalculatorGUI(QMainWindow):
                 reduction[idx] = use
                 remaining -= use * price
 
+            # 当前已减少金额
+            current_reduced = reduce_target - remaining
+
             # =================================================
-            # 3️⃣ 用最便宜服务微调（允许略超）
+            # 3️⃣ 最小服务微调（三方案比较 ⭐最终版）
             # =================================================
+            best_reduction = reduction[:]
+            best_diff = abs(current_reduced - reduce_target)
+
             if remaining > 0 and items:
                 min_price, max_reduce, idx = items[-1]
                 left = max_reduce - reduction[idx]
 
                 if left > 0:
-                    need = int(round(remaining / min_price))
-                    need = max(1, min(need, left))
-                    reduction[idx] += need
-                    remaining -= need * min_price
+                    floor_need = int(remaining // min_price)
+                    ceil_need = floor_need + 1
+
+                    candidates = []
+
+                    # floor 方案（不超）
+                    if 1 <= floor_need <= left:
+                        reduced_money = current_reduced + floor_need * min_price
+                        diff = abs(reduced_money - reduce_target)
+                        candidates.append((diff, floor_need))
+
+                    # ceil 方案（可能超）
+                    if 1 <= ceil_need <= left:
+                        reduced_money = current_reduced + ceil_need * min_price
+                        diff = abs(reduced_money - reduce_target)
+                        candidates.append((diff, ceil_need))
+
+                    # 和“不微调”比较
+                    if candidates:
+                        best_candidate = min(candidates, key=lambda x: x[0])
+                        if best_candidate[0] < best_diff:
+                            reduction[idx] += best_candidate[1]
+                            remaining -= best_candidate[1] * min_price
 
             # =================================================
-            # 4️⃣ 计算最终数量与金额
+            # 4️⃣ 最终数量与金额
             # =================================================
             final_qty = [quantities[i] - reduction[i] for i in range(len(quantities))]
             final_total = sum(prices[i] * final_qty[i] for i in range(len(prices)))
@@ -283,7 +302,7 @@ class ServiceCalculatorGUI(QMainWindow):
             diff = abs(reduced_money - reduce_target)
 
             # =================================================
-            # 5️⃣ 输出结果（全部服务显示）
+            # 5️⃣ 输出
             # =================================================
             result = f"💰 原始金额: {original_total:.2f}\n"
             result += f"🎯 目标减少: {reduce_target:.2f}\n"
