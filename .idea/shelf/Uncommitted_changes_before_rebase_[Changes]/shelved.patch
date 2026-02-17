@@ -1,0 +1,79 @@
+Index: verify_features.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#!/usr/bin/env python3\n\"\"\"\n功能验证脚本 - 验证新添加的功能是否正常工作\n\"\"\"\n\nimport json\nimport os\n\ndef test_config_structure():\n    \"\"\"测试配置文件结构\"\"\"\n    config_file = \".service_config.json\"\n    \n    if os.path.exists(config_file):\n        with open(config_file, 'r') as f:\n            config = json.load(f)\n        \n        print(\"=== 配置文件结构验证 ===\")\n        print(f\"项目名称: {config.get('project_name', '未设置')}\")\n        print(f\"服务数量: {len(config.get('services', []))}\")\n        \n        if 'services' in config:\n            print(\"\\n前3个服务:\")\n            for i, service in enumerate(config['services'][:3]):\n                print(f\"  {i+1}. {service['name']}: {service['price']:.2f}€\")\n        else:\n            print(\"❌ 未找到服务数据\")\n            return False\n            \n        print(\"✅ 配置文件结构正确\")\n        return True\n    else:\n        print(\"⚠\uFE0F  配置文件不存在，将创建默认配置\")\n        return True\n\ndef test_new_features_demo():\n    \"\"\"演示新功能的使用方法\"\"\"\n    print(\"\\n=== 新功能使用说明 ===\")\n    print(\"1. 项目名称修改:\")\n    print(\"   - 在顶部的输入框中直接修改项目名称\")\n    print(\"   - 修改会自动保存并更新窗口标题\")\n    \n    print(\"\\n2. 服务删除功能:\")\n    print(\"   - 每行右侧有红色'-'按钮\")\n    print(\"   - 点击后会弹出确认对话框\")\n    print(\"   - 确认后该服务将被永久删除\")\n    \n    print(\"\\n3. 新增服务功能:\")\n    print(\"   - 在表格最后一行直接输入新服务信息\")\n    print(\"   - 输入服务名称和价格\")\n    print(\"   - 点击绿色'✓'按钮保存\")\n    print(\"   - 无需额外按钮，操作更直观\")\n    \n    print(\"\\n4. 配置持久化:\")\n    print(\"   - 所有修改都会自动保存到 .service_config.json\")\n    print(\"   - 下次启动时会自动加载上次的配置\")\n    \n    print(\"\\n=== 功能特点 ===\")\n    print(\"✅ 支持德语/中文双语界面\")\n    print(\"✅ 实时保存所有配置更改\")\n    print(\"✅ 删除操作有二次确认保护\")\n    print(\"✅ 新增服务自动聚焦到名称输入框\")\n    print(\"✅ 完全向后兼容旧配置格式\")\n\nif __name__ == \"__main__\":\n    print(\"服务计算器 - 新功能验证\")\n    print(\"=\" * 40)\n    \n    # 测试配置结构\n    if test_config_structure():\n        # 显示使用说明\n        test_new_features_demo()\n        print(\"\\n\uD83C\uDF89 所有功能验证通过！\")\n    else:\n        print(\"\\n❌ 功能验证失败，请检查配置文件\")
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/verify_features.py b/verify_features.py
+--- a/verify_features.py	(revision 7b198a77db8490b08a133e2917fee86dd609d054)
++++ b/verify_features.py	(date 1771280922220)
+@@ -35,9 +35,8 @@
+ def test_new_features_demo():
+     """演示新功能的使用方法"""
+     print("\n=== 新功能使用说明 ===")
+-    print("1. 项目名称修改:")
+-    print("   - 在顶部的输入框中直接修改项目名称")
+-    print("   - 修改会自动保存并更新窗口标题")
++    print("1. 语言切换:")
++    print("   - 点击右上角的 DE/CN 按钮切换界面语言")
+     
+     print("\n2. 服务删除功能:")
+     print("   - 每行右侧有红色'-'按钮")
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"95d7aa08-65e6-4c86-9277-4f25addf5497\" name=\"Changes\" comment=\"1\">\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.service_config.json\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.service_config.json\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/service_gui.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/service_gui.py\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"GitHubPullRequestSearchHistory\">{\n  &quot;lastFilter&quot;: {\n    &quot;state&quot;: &quot;OPEN&quot;,\n    &quot;assignee&quot;: &quot;Jonas0124&quot;\n  }\n}</component>\n  <component name=\"GithubPullRequestsUISettings\">{\n  &quot;selectedUrlAndAccountId&quot;: {\n    &quot;url&quot;: &quot;https://github.com/Jonas0124/py_arbeit.git&quot;,\n    &quot;accountId&quot;: &quot;fd4f5f1e-0865-4a04-b58f-4b29a7a6a410&quot;\n  }\n}</component>\n  <component name=\"ProjectColorInfo\">{\n  &quot;associatedIndex&quot;: 5\n}</component>\n  <component name=\"ProjectId\" id=\"39l8ha0ayaKBMxuLSXCJ0gth0db\" />\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\">{\n  &quot;keyToString&quot;: {\n    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,\n    &quot;Python.service_gui.executor&quot;: &quot;Run&quot;,\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,\n    &quot;ai.playground.ignore.import.keys.banner.in.settings&quot;: &quot;true&quot;,\n    &quot;git-widget-placeholder&quot;: &quot;master&quot;,\n    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,\n    &quot;settings.editor.selected.configurable&quot;: &quot;通义灵码&quot;,\n    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;\n  }\n}</component>\n  <component name=\"SharedIndexes\">\n    <attachedChunks>\n      <set>\n        <option value=\"bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-PY-253.30387.127\" />\n        <option value=\"bundled-python-sdk-3944b0c99280-6d6dccd035ac-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.30387.127\" />\n      </set>\n    </attachedChunks>\n  </component>\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"95d7aa08-65e6-4c86-9277-4f25addf5497\" name=\"Changes\" comment=\"\" />\n      <created>1771259416667</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1771259416667</updated>\n      <workItem from=\"1771259417659\" duration=\"111000\" />\n      <workItem from=\"1771259537594\" duration=\"18197000\" />\n    </task>\n    <task id=\"LOCAL-00001\" summary=\"1\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1771269807918</created>\n      <option name=\"number\" value=\"00001\" />\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1771269807918</updated>\n    </task>\n    <task id=\"LOCAL-00002\" summary=\"1\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1771269902819</created>\n      <option name=\"number\" value=\"00002\" />\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1771269902819</updated>\n    </task>\n    <option name=\"localTasksCounter\" value=\"3\" />\n    <servers />\n  </component>\n  <component name=\"TypeScriptGeneratedFilesManager\">\n    <option name=\"version\" value=\"3\" />\n  </component>\n  <component name=\"VcsManagerConfiguration\">\n    <MESSAGE value=\"1\" />\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"1\" />\n  </component>\n  <component name=\"com.intellij.coverage.CoverageDataManagerImpl\">\n    <SUITE FILE_PATH=\"coverage/PythonProject$service_gui.coverage\" NAME=\"service_gui Coverage Results\" MODIFIED=\"1771280636288\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 7b198a77db8490b08a133e2917fee86dd609d054)
++++ b/.idea/workspace.xml	(date 1771280939896)
+@@ -1,11 +1,7 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="ChangeListManager">
+-    <list default="true" id="95d7aa08-65e6-4c86-9277-4f25addf5497" name="Changes" comment="1">
+-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.service_config.json" beforeDir="false" afterPath="$PROJECT_DIR$/.service_config.json" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/service_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/service_gui.py" afterDir="false" />
+-    </list>
++    <list default="true" id="95d7aa08-65e6-4c86-9277-4f25addf5497" name="Changes" comment="1" />
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+@@ -83,7 +79,23 @@
+       <option name="project" value="LOCAL" />
+       <updated>1771269902819</updated>
+     </task>
+-    <option name="localTasksCounter" value="3" />
++    <task id="LOCAL-00003" summary="1">
++      <option name="closed" value="true" />
++      <created>1771280825859</created>
++      <option name="number" value="00003" />
++      <option name="presentableId" value="LOCAL-00003" />
++      <option name="project" value="LOCAL" />
++      <updated>1771280825859</updated>
++    </task>
++    <task id="LOCAL-00004" summary="1">
++      <option name="closed" value="true" />
++      <created>1771280887592</created>
++      <option name="number" value="00004" />
++      <option name="presentableId" value="LOCAL-00004" />
++      <option name="project" value="LOCAL" />
++      <updated>1771280887592</updated>
++    </task>
++    <option name="localTasksCounter" value="5" />
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+@@ -94,6 +106,6 @@
+     <option name="LAST_COMMIT_MESSAGE" value="1" />
+   </component>
+   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+-    <SUITE FILE_PATH="coverage/PythonProject$service_gui.coverage" NAME="service_gui Coverage Results" MODIFIED="1771280636288" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
++    <SUITE FILE_PATH="coverage/PythonProject$service_gui.coverage" NAME="service_gui Coverage Results" MODIFIED="1771280812138" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+   </component>
+ </project>
+\ No newline at end of file
